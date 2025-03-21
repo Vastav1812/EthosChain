@@ -4,6 +4,11 @@
 
 EthosChain is a transparent blockchain-based charity platform built on Ethereum that ensures complete transparency and accountability for donations.
 
+## Visit EthosChain
+
+Check out the live demo by visiting the site:
+[EthosChain Demo](https://ethoschain.netlify.app/)
+
 ## Features
 
 - Create and manage charities with full transparency
