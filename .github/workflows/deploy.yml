@@ -8,6 +8,12 @@ on:
       - 'frontend/**'
       - '.github/workflows/deploy.yml'
 
+# Permissions required for deployment
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write # For PR comments
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
