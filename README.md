@@ -1,28 +1,42 @@
-# EthosChain: Transparent Charity Platform
+<p align="center">
+  <img src="frontend/public/ethoschain-logo.svg" alt="EthosChain Logo" width="200">
+</p>
 
-A blockchain-based charity platform that enables transparent donation tracking and verification of charity organizations.
+<h1 align="center">EthosChain: Transparent Charity Platform</h1>
 
-[![Deploy to Netlify](https://github.com/Vastav1812/EthosChain/actions/workflows/deploy.yml/badge.svg)](https://github.com/Vastav1812/EthosChain/actions/workflows/deploy.yml)
-[![Test and Lint](https://github.com/Vastav1812/EthosChain/actions/workflows/test-and-lint.yml/badge.svg)](https://github.com/Vastav1812/EthosChain/actions/workflows/test-and-lint.yml)
-[![Security Scanning](https://github.com/Vastav1812/EthosChain/actions/workflows/security.yml/badge.svg)](https://github.com/Vastav1812/EthosChain/actions/workflows/security.yml)
+<p align="center">
+  A blockchain-based charity platform enabling transparent donation tracking and verification of charitable organizations
+</p>
 
-## Visit EthosChain
+<p align="center">
+  <a href="https://github.com/Vastav1812/EthosChain/actions/workflows/deploy.yml">
+    <img src="https://github.com/Vastav1812/EthosChain/actions/workflows/deploy.yml/badge.svg" alt="Deploy to Netlify">
+  </a>
+  <a href="https://github.com/Vastav1812/EthosChain/actions/workflows/security.yml">
+    <img src="https://github.com/Vastav1812/EthosChain/actions/workflows/security.yml/badge.svg" alt="Security Scanning">
+  </a>
+</p>
 
-Check out the live demo by visiting the site:
-[EthosChain Demo](https://ethoschain.netlify.app/)
+<p align="center">
+  <a href="https://ethoschain.netlify.app/">✨ Live Demo</a>
+</p>
 
-## Features
+## 🌟 Overview
 
-- Create and manage charity organizations
-- Make transparent donations on the blockchain
-- Verify charitable organizations through external APIs
-- Track donation impact and charity performance
-- Cross-chain donation capabilities
-- Recurring donation setup
-- Impact tracking and metrics visualization
-- Transparency reports for fund usage
+EthosChain leverages blockchain technology to create a transparent, secure, and efficient platform for charitable giving. Our mission is to restore trust in charitable organizations by providing complete transparency in the donation process and fund usage.
 
-## Technology Stack
+## ✨ Key Features
+
+- **Transparent Donations** - Track every donation on the blockchain
+- **Charity Verification** - Verify organizations through external APIs
+- **Impact Tracking** - Visualize the impact of your donations
+- **Transparency Reports** - See detailed reports on fund usage
+- **Cross-Chain Donations** - Donate across multiple blockchain networks
+- **Recurring Donations** - Set up automated recurring contributions
+- **Dashboard Analytics** - View comprehensive donation analytics
+- **Smart Contract Security** - Donations secured by blockchain technology
+
+## 🛠️ Technology Stack
 
 ### Frontend
 - **Framework:** React with TypeScript
@@ -30,24 +44,21 @@ Check out the live demo by visiting the site:
 - **Web3 Integration:** wagmi, viem, RainbowKit
 - **State Management:** React Context API
 - **Styling:** Emotion, styled-components
-- **Package Manager:** npm
 - **Build Tool:** Vite
 
-### Backend/Blockchain
+### Blockchain
 - **Network:** Ethereum (Sepolia testnet)
 - **Smart Contracts:** Solidity
 - **Contract Interaction:** Ethers.js
 
 ### CI/CD & DevOps
 - **CI/CD:** GitHub Actions, Netlify
-- **Testing:** Vitest, React Testing Library
-- **Code Quality:** ESLint, TypeScript
 - **Security:** GitHub CodeQL, npm audit
 
-## Project Structure
+## 📂 Project Structure
 
 ```
-blockchain-charity-platform/
+EthosChain/
 ├── .github/workflows/    # CI/CD configuration
 ├── frontend/             # React frontend application
 │   ├── public/           # Static files
@@ -64,7 +75,7 @@ blockchain-charity-platform/
 └── scripts/              # Deployment and utility scripts
 ```
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 - Node.js (v16+)
@@ -85,68 +96,14 @@ cd frontend
 npm install
 ```
 
-3. Create a `.env` file in the frontend directory with required environment variables:
-```
-VITE_WALLET_CONNECT_PROJECT_ID=your_wallet_connect_project_id
-VITE_CONTRACT_ADDRESS=your_contract_address
-```
-
-4. Start the development server:
+3. Start the development server:
 ```bash
 npm run dev
 ```
 
-5. Open your browser and navigate to `http://localhost:5173`
+4. Open your browser and navigate to `http://localhost:5173`
 
-## Continuous Integration & Deployment
-
-The project uses GitHub Actions for CI/CD pipelines:
-
-### Workflows
-
-1. **Deploy to Netlify** (`.github/workflows/deploy.yml`)
-   - Triggered on pushes to the main branch affecting frontend code
-   - Builds the application and deploys to Netlify production
-
-2. **Test and Lint** (`.github/workflows/test-and-lint.yml`)
-   - Runs on pushes and pull requests to verify code quality
-   - Executes linting, type checking, and unit tests
-
-3. **Security Scanning** (`.github/workflows/security.yml`)
-   - Runs on pushes, pull requests, and weekly schedule
-   - Performs npm audit, GitHub CodeQL analysis, and dependency review
-
-### Deployment
-
-The application is automatically deployed to Netlify using GitHub Actions when changes are pushed to the main branch. The deployment configuration can be found in `.github/workflows/deploy.yml`.
-
-### Setting Up Secrets
-
-To set up the CI/CD pipeline, you need to add the following secrets to your GitHub repository:
-
-1. Go to your GitHub repository > Settings > Secrets and variables > Actions
-2. Add the following secrets:
-   - `NETLIFY_AUTH_TOKEN`: Your Netlify authentication token
-   - `NETLIFY_SITE_ID`: Your Netlify site ID
-   - `VITE_WALLET_CONNECT_PROJECT_ID`: Your WalletConnect project ID
-   - `VITE_CONTRACT_ADDRESS`: Your deployed contract address
-
-## Manual Deployment
-
-If you need to deploy manually:
-
-1. Build the frontend:
-```bash
-cd frontend
-npm run build
-```
-
-2. Deploy to Netlify using the Netlify CLI:
-```bash
-npx netlify deploy --prod
-```
-
-## Testing
+## 🧪 Testing
 
 Run the test suite:
 
@@ -161,7 +118,9 @@ Run linting:
 npm run lint
 ```
 
-## Contributing
+## 🤝 Contributing
+
+Interested in contributing to EthosChain? Check out our [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -169,11 +128,11 @@ npm run lint
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
+## 📜 License
 
 This project is licensed under the MIT License.
 
-## Contact
+## 📬 Contact
 
 Project Link: [https://github.com/Vastav1812/EthosChain](https://github.com/Vastav1812/EthosChain)
 
