@@ -27,6 +27,11 @@ jobs:
         with:
           node-version: '18'
           
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm install --legacy-peer-deps
+          
       - name: Run npm audit
         run: |
           cd frontend
