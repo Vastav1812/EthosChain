@@ -24,7 +24,7 @@ jobs:
       - name: Run npm audit
         run: |
           cd frontend
-          npm audit --audit-level=high
+          npm audit --audit-level=high --legacy-peer-deps
           
       - name: CodeQL Analysis
         uses: github/codeql-action/init@v2
