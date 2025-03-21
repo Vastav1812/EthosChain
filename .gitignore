@@ -23,6 +23,7 @@
 .env.test.local
 .env.production.local
 .secret
+.cursor/
 
 # Debug logs
 npm-debug.log*
