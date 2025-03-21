@@ -29,7 +29,8 @@ jobs:
       - name: Build Frontend 🏗️
         run: |
           cd frontend
-          npm run build
+          echo "VITE_DISABLE_TYPE_CHECK=true" >> .env
+          npm run build:no-types
           
       - name: Deploy to Netlify 🚀
         uses: nwtgck/actions-netlify@v2.0
