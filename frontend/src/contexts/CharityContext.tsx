@@ -47,67 +47,125 @@ export interface Charity {
   description: string;
 }
 
+export interface Organization {
+  id: string;
+  name: string;
+  address: Address;
+  description: string;
+}
+
+export interface Transaction {
+  id: string;
+  charityId: string;
+  organizationId: string;
+  amount: string;
+  timestamp: number;
+  description: string;
+}
+
 interface CharityContextType {
   charities: Charity[];
-  addCharity: (newCharity: Charity) => void;
-  isLoading: boolean;
+  organizations: Organization[];
+  transactions: Transaction[];
+  loading: boolean;
 }
 
-const CharityContext = createContext<CharityContextType | undefined>(undefined);
+const CharityContext = createContext<CharityContextType>({
+  charities: [],
+  organizations: [],
+  transactions: [],
+  loading: false,
+});
 
-export const useCharityContext = () => {
-  const context = useContext(CharityContext);
-  if (!context) {
-    throw new Error('useCharityContext must be used within a CharityProvider');
-  }
-  return context;
-};
+export const useCharityContext = () => useContext(CharityContext);
 
-interface CharityProviderProps {
-  children: ReactNode;
-}
-
-export const CharityProvider: React.FC<CharityProviderProps> = ({ children }) => {
+export const CharityProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [charities, setCharities] = useState<Charity[]>(SAMPLE_CHARITIES);
-  const [isLoading, setIsLoading] = useState(false);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(false);
 
   // Read charities from contract
-  const { data: contractCharities, isLoading: charitiesLoading } = useReadContract({
-    address: CONTRACT_ADDRESS as Address,
+  const { data: charitiesData, isLoading: charitiesLoading } = useReadContract({
+    address: CONTRACT_ADDRESS,
     abi: CharityJSON.abi,
     functionName: 'getCharities',
   });
 
-  // Update charities from contract when available
-  useEffect(() => {
-    setIsLoading(charitiesLoading);
-    
-    if (contractCharities && Array.isArray(contractCharities) && contractCharities.length > 0) {
-      try {
-        console.log("Contract charities loaded:", contractCharities);
-        
-        // Map contract charities to our Charity interface
-        const mappedCharities = contractCharities.map((charity: any, index: number) => ({
-          id: (index + 1).toString(),
-          name: charity.name || `Charity ${index + 1}`,
-          address: charity.charityAddress as Address,
-          description: charity.description || 'No description provided',
-        }));
-        
-        // Combine with sample charities
-        setCharities([...SAMPLE_CHARITIES, ...mappedCharities]);
-      } catch (error) {
-        console.error("Error processing contract charities:", error);
-      }
-    }
-  }, [contractCharities, charitiesLoading]);
+  // Read organizations from contract
+  const { data: organizationsData, isLoading: orgsLoading } = useReadContract({
+    address: CONTRACT_ADDRESS,
+    abi: CharityJSON.abi,
+    functionName: 'getOrganizations',
+  });
 
-  const addCharity = (newCharity: Charity) => {
-    setCharities((prevCharities) => [...prevCharities, newCharity]);
+  // Read transactions from contract
+  const { data: transactionsData, isLoading: txLoading } = useReadContract({
+    address: CONTRACT_ADDRESS,
+    abi: CharityJSON.abi,
+    functionName: 'getTransactions',
+  });
+
+  useEffect(() => {
+    setLoading(charitiesLoading || orgsLoading || txLoading);
+    
+    // Process charities data when available
+    if (charitiesData) {
+      const processedCharities = processCharitiesData(charitiesData);
+      setCharities(processedCharities.length > 0 ? processedCharities : SAMPLE_CHARITIES);
+    }
+    
+    // Process organizations data when available
+    if (organizationsData) {
+      const processedOrgs = processOrganizationsData(organizationsData);
+      setOrganizations(processedOrgs);
+    }
+    
+    // Process transactions data when available
+    if (transactionsData) {
+      const processedTxs = processTransactionsData(transactionsData);
+      setTransactions(processedTxs);
+    }
+  }, [charitiesData, organizationsData, transactionsData, charitiesLoading, orgsLoading, txLoading]);
+
+  // Helper functions to process data from contract
+  const processCharitiesData = (data: any): Charity[] => {
+    if (!data || !Array.isArray(data)) return [];
+    
+    return data.map((charity: any, index: number) => ({
+      id: index.toString(),
+      name: charity.name || `Charity ${index}`,
+      address: charity.charityAddress as Address,
+      description: charity.description || 'No description available',
+    }));
+  };
+  
+  const processOrganizationsData = (data: any): Organization[] => {
+    if (!data || !Array.isArray(data)) return [];
+    
+    return data.map((org: any, index: number) => ({
+      id: index.toString(),
+      name: org.name || `Organization ${index}`,
+      address: org.organizationAddress as Address,
+      description: org.description || 'No description available',
+    }));
+  };
+  
+  const processTransactionsData = (data: any): Transaction[] => {
+    if (!data || !Array.isArray(data)) return [];
+    
+    return data.map((tx: any, index: number) => ({
+      id: index.toString(),
+      charityId: tx.charityId?.toString() || '0',
+      organizationId: tx.organizationId?.toString() || '0',
+      amount: tx.amount?.toString() || '0',
+      timestamp: Number(tx.timestamp) || Date.now(),
+      description: tx.description || 'Transaction details',
+    }));
   };
 
   return (
-    <CharityContext.Provider value={{ charities, addCharity, isLoading }}>
+    <CharityContext.Provider value={{ charities, organizations, transactions, loading }}>
       {children}
     </CharityContext.Provider>
   );

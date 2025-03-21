@@ -1,8 +1,10 @@
-# EthosChain - Transparent Blockchain Charity
+# EthosChain: Transparent Charity Platform
 
-![EthosChain Logo](frontend/public/ethoschain-logo.svg)
+A blockchain-based charity platform that enables transparent donation tracking and verification of charity organizations.
 
-EthosChain is a transparent blockchain-based charity platform built on Ethereum that ensures complete transparency and accountability for donations.
+[![Deploy to Netlify](https://github.com/Vastav1812/EthosChain/actions/workflows/deploy.yml/badge.svg)](https://github.com/Vastav1812/EthosChain/actions/workflows/deploy.yml)
+[![Test and Lint](https://github.com/Vastav1812/EthosChain/actions/workflows/test-and-lint.yml/badge.svg)](https://github.com/Vastav1812/EthosChain/actions/workflows/test-and-lint.yml)
+[![Security Scanning](https://github.com/Vastav1812/EthosChain/actions/workflows/security.yml/badge.svg)](https://github.com/Vastav1812/EthosChain/actions/workflows/security.yml)
 
 ## Visit EthosChain
 
@@ -11,111 +13,169 @@ Check out the live demo by visiting the site:
 
 ## Features
 
-- Create and manage charities with full transparency
-- Create organizations to receive and distribute funds
-- Make direct donations to charities
-- View transaction history in real-time
-- Connect with MetaMask or other Ethereum wallets
-- Support for Sepolia testnet
+- Create and manage charity organizations
+- Make transparent donations on the blockchain
+- Verify charitable organizations through external APIs
+- Track donation impact and charity performance
+- Cross-chain donation capabilities
+- Recurring donation setup
+- Impact tracking and metrics visualization
+- Transparency reports for fund usage
 
-## Tech Stack
+## Technology Stack
 
-- **Frontend:** React, TypeScript, Material UI, RainbowKit
-- **Smart Contracts:** Solidity, Truffle
-- **Blockchain Interaction:** wagmi, viem
+### Frontend
+- **Framework:** React with TypeScript
+- **UI Library:** Material-UI (MUI)
+- **Web3 Integration:** wagmi, viem, RainbowKit
+- **State Management:** React Context API
+- **Styling:** Emotion, styled-components
+- **Package Manager:** npm
+- **Build Tool:** Vite
+
+### Backend/Blockchain
+- **Network:** Ethereum (Sepolia testnet)
+- **Smart Contracts:** Solidity
+- **Contract Interaction:** Ethers.js
+
+### CI/CD & DevOps
 - **CI/CD:** GitHub Actions, Netlify
+- **Testing:** Vitest, React Testing Library
+- **Code Quality:** ESLint, TypeScript
+- **Security:** GitHub CodeQL, npm audit
 
 ## Project Structure
 
 ```
-ethoschain/
-├── contracts/            # Solidity smart contracts
+blockchain-charity-platform/
+├── .github/workflows/    # CI/CD configuration
 ├── frontend/             # React frontend application
-├── migrations/           # Truffle migration scripts
-├── test/                 # Smart contract tests
-└── .github/workflows/    # CI/CD configuration
+│   ├── public/           # Static files
+│   ├── src/              # Source code
+│   │   ├── components/   # React components
+│   │   ├── contexts/     # React contexts
+│   │   ├── hooks/        # Custom React hooks
+│   │   ├── services/     # API and service functions
+│   │   ├── types/        # TypeScript type definitions
+│   │   ├── utils/        # Utility functions
+│   │   ├── App.tsx       # Main application component
+│   │   └── main.tsx      # Entry point
+├── contracts/            # Solidity smart contracts
+└── scripts/              # Deployment and utility scripts
 ```
 
-## Local Development
+## Getting Started
 
 ### Prerequisites
-
 - Node.js (v16+)
-- npm or yarn
-- MetaMask browser extension
-- Truffle (for smart contract development)
+- npm (v8+)
+- MetaMask or another Ethereum wallet extension
 
-### Setup
+### Installation
 
 1. Clone the repository:
-   ```
-   git clone https://github.com/Vastav1812/EthosChain.git
-   cd EthosChain
-   ```
+```bash
+git clone https://github.com/Vastav1812/EthosChain.git
+cd EthosChain
+```
 
-2. Install dependencies:
-   ```
-   npm install
-   cd frontend
-   npm install
-   ```
+2. Install frontend dependencies:
+```bash
+cd frontend
+npm install
+```
 
-3. Start the frontend development server:
-   ```
-   cd frontend
-   npm run dev
-   ```
+3. Create a `.env` file in the frontend directory with required environment variables:
+```
+VITE_WALLET_CONNECT_PROJECT_ID=your_wallet_connect_project_id
+VITE_CONTRACT_ADDRESS=your_contract_address
+```
 
-4. Open http://localhost:5173 in your browser
+4. Start the development server:
+```bash
+npm run dev
+```
 
-### Blockchain Development
+5. Open your browser and navigate to `http://localhost:5173`
 
-1. Compile smart contracts:
-   ```
-   truffle compile
-   ```
+## Continuous Integration & Deployment
 
-2. Deploy to local network:
-   ```
-   truffle migrate
-   ```
+The project uses GitHub Actions for CI/CD pipelines:
 
-3. Deploy to testnet:
-   ```
-   truffle migrate --network sepolia
-   ```
+### Workflows
 
-## Deployment
+1. **Deploy to Netlify** (`.github/workflows/deploy.yml`)
+   - Triggered on pushes to the main branch affecting frontend code
+   - Builds the application and deploys to Netlify production
 
-The application is automatically deployed to Netlify using GitHub Actions when changes are pushed to the main branch.
+2. **Test and Lint** (`.github/workflows/test-and-lint.yml`)
+   - Runs on pushes and pull requests to verify code quality
+   - Executes linting, type checking, and unit tests
 
-### Manual Deployment
+3. **Security Scanning** (`.github/workflows/security.yml`)
+   - Runs on pushes, pull requests, and weekly schedule
+   - Performs npm audit, GitHub CodeQL analysis, and dependency review
 
-1. Build the frontend:
-   ```
-   cd frontend
-   npm run build
-   ```
+### Deployment
 
-2. Deploy to Netlify:
-   ```
-   npx netlify deploy --prod
-   ```
+The application is automatically deployed to Netlify using GitHub Actions when changes are pushed to the main branch. The deployment configuration can be found in `.github/workflows/deploy.yml`.
 
-## Setting Up CI/CD
+### Setting Up Secrets
 
 To set up the CI/CD pipeline, you need to add the following secrets to your GitHub repository:
 
-1. `NETLIFY_AUTH_TOKEN`: Your Netlify authentication token
-2. `NETLIFY_SITE_ID`: The ID of your Netlify site
+1. Go to your GitHub repository > Settings > Secrets and variables > Actions
+2. Add the following secrets:
+   - `NETLIFY_AUTH_TOKEN`: Your Netlify authentication token
+   - `NETLIFY_SITE_ID`: Your Netlify site ID
+   - `VITE_WALLET_CONNECT_PROJECT_ID`: Your WalletConnect project ID
+   - `VITE_CONTRACT_ADDRESS`: Your deployed contract address
 
-## License
+## Manual Deployment
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+If you need to deploy manually:
+
+1. Build the frontend:
+```bash
+cd frontend
+npm run build
+```
+
+2. Deploy to Netlify using the Netlify CLI:
+```bash
+npx netlify deploy --prod
+```
+
+## Testing
+
+Run the test suite:
+
+```bash
+cd frontend
+npm test
+```
+
+Run linting:
+
+```bash
+npm run lint
+```
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License.
+
+## Contact
+
+Project Link: [https://github.com/Vastav1812/EthosChain](https://github.com/Vastav1812/EthosChain)
 
 ## Features ✨
 - **Donate ETH** to the charity with a single click.

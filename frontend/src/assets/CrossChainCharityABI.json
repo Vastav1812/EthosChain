@@ -1,0 +1,43 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_gateway",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_gasService",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "destinationChain",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "destinationAddress",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "charityId",
+          "type": "string"
+        }
+      ],
+      "name": "donateAcrossChain",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    }
+  ]
+} 

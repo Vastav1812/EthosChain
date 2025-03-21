@@ -11,19 +11,19 @@ export const useCharityContract = () => {
   
   // Read functions
   const { data: charitiesData } = useReadContract({
-    address: CONTRACT_ADDRESS as Address,
+    address: CONTRACT_ADDRESS,
     abi: charityABI.abi,
     functionName: 'getCharities',
   });
 
   const { data: organizationsData } = useReadContract({
-    address: CONTRACT_ADDRESS as Address,
+    address: CONTRACT_ADDRESS,
     abi: charityABI.abi,
     functionName: 'getOrganizations',
   });
 
   const { data: transactionsData } = useReadContract({
-    address: CONTRACT_ADDRESS as Address,
+    address: CONTRACT_ADDRESS,
     abi: charityABI.abi,
     functionName: 'getTransactions',
   });
@@ -38,10 +38,9 @@ export const useCharityContract = () => {
     etherCoins: string
   ) => {
     if (!writeContract) {
-      console.error('Contract write not ready - wallet might not be connected');
       throw new Error('Contract write not ready');
     }
-
+    
     try {
       console.log('Creating charity with params:', {
         name,
@@ -52,105 +51,82 @@ export const useCharityContract = () => {
         etherCoins,
         contractAddress: CONTRACT_ADDRESS
       });
-
-      const result = await writeContract({
-        address: CONTRACT_ADDRESS as Address,
+      
+      const tx = await writeContract({
+        address: CONTRACT_ADDRESS,
         abi: charityABI.abi,
         functionName: 'createCharity',
-        args: [name, description, bankAccount, bankName, address, etherCoins],
+        args: [name, description, bankAccount, bankName, address, etherCoins]
       });
-
-      console.log('Charity creation transaction:', result);
-      return { success: true, result };
+      
+      return { success: true, tx };
     } catch (error) {
       console.error('Error creating charity:', error);
       throw error;
     }
   };
-
+  
   const createOrganization = async (
     name: string,
+    description: string,
     bankAccount: string,
     bankName: string,
-    address: string,
-    etherCoins: string
+    address: string
   ) => {
     if (!writeContract) {
-      console.error('Contract write not ready - wallet might not be connected');
       throw new Error('Contract write not ready');
     }
-
+    
     try {
-      console.log('Creating organization with params:', {
-        name,
-        bankAccount,
-        bankName,
-        address,
-        etherCoins,
-        contractAddress: CONTRACT_ADDRESS
-      });
-
-      const result = await writeContract({
-        address: CONTRACT_ADDRESS as Address,
+      const tx = await writeContract({
+        address: CONTRACT_ADDRESS,
         abi: charityABI.abi,
-        functionName: 'createOrganisation',
-        args: [name, bankAccount, bankName, address, etherCoins],
+        functionName: 'createOrganization',
+        args: [name, description, bankAccount, bankName, address]
       });
-
-      console.log('Organization creation transaction:', result);
-      return { success: true, result };
+      
+      return { success: true, tx };
     } catch (error) {
       console.error('Error creating organization:', error);
       throw error;
     }
   };
-
+  
   const createTransaction = async (
-    charityAddress: string,
-    organizationAddress: string,
-    amount: string
+    charityId: string,
+    organizationId: string,
+    value: string,
+    description: string
   ) => {
     if (!writeContract) {
-      console.error('Contract write not ready - wallet might not be connected');
       throw new Error('Contract write not ready');
     }
-
+    
     try {
-      const parsedAmount = amount.replace(' ETH', '');
-      console.log('Creating transaction with params:', {
-        charityAddress,
-        organizationAddress,
-        amount: parsedAmount,
-        contractAddress: CONTRACT_ADDRESS
-      });
-
-      const result = await writeContract({
-        address: CONTRACT_ADDRESS as Address,
+      const parsedValue = parseEther(value);
+      
+      const tx = await writeContract({
+        address: CONTRACT_ADDRESS,
         abi: charityABI.abi,
         functionName: 'createTransaction',
-        args: [charityAddress, organizationAddress, parsedAmount],
-        value: parseEther(parsedAmount),
+        args: [charityId, organizationId, description],
+        value: parsedValue
       });
-
-      console.log('Transaction creation details:', {
-        result,
-        value: parsedAmount
-      });
-
-      return { success: true, result };
+      
+      return { success: true, tx };
     } catch (error) {
       console.error('Error creating transaction:', error);
       throw error;
     }
   };
-
+  
   return {
+    charitiesData,
+    organizationsData,
+    transactionsData,
     createCharity,
     createOrganization,
     createTransaction,
-    charities: charitiesData,
-    organizations: organizationsData,
-    transactions: transactionsData,
-    isLoading: isPending,
+    isLoading: isPending
   };
 }; 

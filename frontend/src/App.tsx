@@ -1,16 +1,26 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import { useCharityContract } from './hooks/useCharityContract';
-import { AppBar, Toolbar, Container, Typography, Box, Button, Alert, Grid } from '@mui/material';
+import { useCharityContract } from './hooks/useContract';
+import { AppBar, Toolbar, Container, Typography, Box, Button, Alert, Grid, Tabs, Tab, IconButton, Drawer } from '@mui/material';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import TransactionHistory from './components/TransactionHistory';
 import TransactionNotification from './components/TransactionNotification';
 import TabComponent from './components/ui/TabComponent';
-import tabs from './constants/tabConfig';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { parseEther } from 'viem';
 import type { Address } from 'viem';
+import { CrossChainDonationForm } from './components/CrossChainDonationForm';
+import CharityForm from './components/CharityForm';
+import OrganizationForm from './components/OrganizationForm';
+import TransactionForm from './components/TransactionForm';
+import CharityVerification from './components/CharityVerification';
+import type { VerifiedCharityData, Transaction } from './types';
+import Dashboard from './components/Dashboard';
+import ImpactTracker from './components/ImpactTracker';
+import TransparencyReport from './components/TransparencyReport';
+import ContractVerification from './components/ContractVerification';
+import RecurringDonations from './components/RecurringDonations';
+import { DashboardIcon, VolunteerActivismIcon, AddIcon, AddBusinessIcon, VerifiedIcon, SecurityIcon, RepeatIcon, LinkIcon, AssessmentIcon, DescriptionIcon, HistoryIcon, CloseIcon } from './components/icons';
 
 // Create dark theme with orange accents
 const theme = createTheme({
@@ -146,74 +156,15 @@ const theme = createTheme({
   },
 });
 
-interface Transaction {
-  status: 'pending' | 'success' | 'error';
-  hash: string;
-  amount?: bigint | string;
-  to?: Address | string;
-  description?: string;
-  timestamp: number;
-}
-
-// Update the tab content components to use the actual contract functions
-const updateTabsWithContractFunctions = (
-  createCharity: (name: string, description: string, bankAccount: string, bankName: string, address: string, etherCoins: string) => Promise<any>,
-  createOrganization: (name: string, bankAccount: string, bankName: string, address: string, etherCoins: string) => Promise<any>,
-  createTransaction: (charityAddress: string, amount: string, description: string) => Promise<any>,
-  isLoading: boolean
-) => {
-  return tabs.map(tab => {
-    if (tab.id === 'charity') {
-      const CharityContent = tab.content;
-      return {
-        ...tab,
-        content: ({ id, active }: { id: string; active: boolean }) => (
-          <CharityContent
-            id={id}
-            active={active}
-            createCharity={createCharity}
-            isLoading={isLoading}
-          />
-        )
-      };
-    }
-    if (tab.id === 'organization') {
-      const OrganizationContent = tab.content;
-      return {
-        ...tab,
-        content: ({ id, active }: { id: string; active: boolean }) => (
-          <OrganizationContent
-            id={id}
-            active={active}
-            createOrganization={createOrganization}
-            isLoading={isLoading}
-          />
-        )
-      };
-    }
-    if (tab.id === 'transaction') {
-      const TransactionContent = tab.content;
-      return {
-        ...tab,
-        content: ({ id, active }: { id: string; active: boolean }) => (
-          <TransactionContent
-            id={id}
-            active={active}
-            createTransaction={createTransaction}
-            isLoading={isLoading}
-          />
-        )
-      };
-    }
-    return tab;
-  });
-};
-
 function App() {
   const { createCharity, createOrganization, createTransaction, isLoading } = useCharityContract();
   const { isConnected, address } = useAccount();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState(0);
+  const [notification, setNotification] = useState<{ message: string; open: boolean } | null>(null);
+  const [transactionHistoryOpen, setTransactionHistoryOpen] = useState(false);
+  const [tabGroupIndex, setTabGroupIndex] = useState(0);
   
   // Check wallet connection
   useEffect(() => {
@@ -224,6 +175,120 @@ function App() {
     }
   }, [isConnected]);
 
+  const handleTabChange = (index: number) => {
+    setActiveTab(index);
+  };
+
+  const handleTabGroupChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setTabGroupIndex(newValue);
+    // Reset active tab to first tab in the new group
+    setActiveTab(0);
+  };
+
+  const getTabContent = (key: string) => {
+    // Map tab keys to their respective components
+    const loading = isLoading === undefined ? false : isLoading;
+    
+    switch (key) {
+      case 'dashboard':
+        return <Dashboard isLoading={loading} />;
+      case 'create-charity':
+        return <CharityForm 
+          isLoading={loading}
+          createCharity={wrappedCreateCharity} 
+        />;
+      case 'create-organization':
+        return <OrganizationForm 
+          isLoading={loading}
+          createOrganization={wrappedCreateOrganization} 
+        />;
+      case 'create-transaction':
+        return <TransactionForm 
+          isLoading={loading}
+          createTransaction={wrappedCreateTransaction} 
+        />;
+      case 'recurring-donations':
+        return <RecurringDonations isLoading={loading} />;
+      case 'cross-chain-donation':
+        return <CrossChainDonationForm />;
+      case 'charity-verification':
+        return <CharityVerification 
+          isLoading={loading}
+          onVerifiedCharitySelect={handleVerifiedCharitySelect} 
+        />;
+      case 'impact-tracker':
+        return <ImpactTracker isLoading={loading} />;
+      case 'transparency-reports':
+        return <TransparencyReport isLoading={loading} />;
+      case 'contract-verification':
+        return <ContractVerification isLoading={loading} />;
+      default:
+        return <Box>Content not found</Box>;
+    }
+  };
+
+  // Group tabs into logical categories
+  const tabGroups = useMemo(() => ({
+    main: [
+      {
+        id: 'dashboard',
+        label: 'Stats',
+        icon: <DashboardIcon />,
+      },
+      {
+        id: 'create-transaction',
+        label: 'Donate',
+        icon: <VolunteerActivismIcon />
+      }
+    ],
+    creation: [
+      {
+        id: 'create-charity', 
+        label: 'New Charity',
+        icon: <AddIcon />
+      },
+      {
+        id: 'create-organization',
+        label: 'New Org',
+        icon: <AddBusinessIcon />
+      }
+    ],
+    verification: [
+      {
+        id: 'charity-verification',
+        label: 'Verify NGO',
+        icon: <VerifiedIcon />
+      },
+      {
+        id: 'contract-verification',
+        label: 'Verify SC',
+        icon: <SecurityIcon />
+      }
+    ],
+    features: [
+      {
+        id: 'recurring-donations',
+        label: 'Recurring',
+        icon: <RepeatIcon />
+      },
+      {
+        id: 'cross-chain-donation',
+        label: 'Cross-Chain',
+        icon: <LinkIcon />
+      },
+      {
+        id: 'impact-tracker',
+        label: 'Impact',
+        icon: <AssessmentIcon />
+      },
+      {
+        id: 'transparency-reports',
+        label: 'Reports',
+        icon: <DescriptionIcon />
+      }
+    ]
+  }), []);
+  
   const handleTransaction = useCallback(async (
     promise: Promise<any>,
     details: { amount?: bigint | string; to?: Address | string; description?: string }
@@ -253,6 +318,12 @@ function App() {
         )
       );
       
+      // Show notification for successful transaction
+      setNotification({
+        message: `Transaction successful: ${details.description || 'Transaction completed'}`,
+        open: true
+      });
+      
       return tx;
     } catch (error) {
       console.error('Transaction error:', error);
@@ -269,7 +340,7 @@ function App() {
   }, [isConnected]);
 
   // Wrap contract functions with transaction tracking
-  const wrappedCreateCharity = async (
+  const wrappedCreateCharity = useCallback(async (
     name: string,
     description: string,
     bankAccount: string,
@@ -282,9 +353,9 @@ function App() {
       createCharity(name, description, bankAccount, bankName, address, etherCoins),
       { description: `Create charity: ${name}` }
     );
-  };
+  }, [createCharity, handleTransaction]);
 
-  const wrappedCreateOrganization = async (
+  const wrappedCreateOrganization = useCallback(async (
     name: string,
     bankAccount: string,
     bankName: string,
@@ -296,9 +367,9 @@ function App() {
       createOrganization(name, bankAccount, bankName, address, etherCoins),
       { description: `Create organization: ${name}`, to: address }
     );
-  };
+  }, [createOrganization, handleTransaction]);
 
-  const wrappedCreateTransaction = async (
+  const wrappedCreateTransaction = useCallback(async (
     charityAddress: string,
     amount: string,
     description: string
@@ -306,24 +377,43 @@ function App() {
     console.log('wrappedCreateTransaction called with:', { charityAddress, amount, description });
     const amountValue = amount.replace(' ETH', '');
     return handleTransaction(
-      createTransaction(charityAddress, address as string, amount),
+      createTransaction(charityAddress, address as string, amountValue, description),
       { 
         description: description || `Donation to charity`,
         to: charityAddress,
         amount: amountValue
       }
     );
+  }, [createTransaction, handleTransaction, address]);
+
+  const handleVerifiedCharitySelect = useCallback((charity: VerifiedCharityData) => {
+    // Here we can handle the verified charity data
+    // For example, we could create the charity in our contract using the verified data
+    if (createCharity) {
+      // Create the charity on the blockchain
+      createCharity(
+        charity.name,
+        charity.description || '',
+        charity.taxId || '000000000', // Use tax ID as bank account if available
+        charity.verificationSource || 'External API',
+        charity.address || '', // Physical address from API
+        '0' // No initial funds
+      ).then(() => {
+        showNotification(`Verified charity ${charity.name} added successfully!`);
+      }).catch(error => {
+        console.error('Error adding verified charity:', error);
+        showNotification(`Error adding charity: ${error.message}`);
+      });
+    }
+  }, [createCharity]);
+
+  const showNotification = (message: string) => {
+    setNotification({ message, open: true });
   };
 
-  const updatedTabs = useMemo(
-    () => updateTabsWithContractFunctions(
-      wrappedCreateCharity,
-      wrappedCreateOrganization,
-      wrappedCreateTransaction,
-      isLoading
-    ),
-    [wrappedCreateCharity, wrappedCreateOrganization, wrappedCreateTransaction, isLoading]
-  );
+  const closeNotification = () => {
+    setNotification(prev => prev ? { ...prev, open: false } : null);
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -361,11 +451,32 @@ function App() {
               </Typography>
             </Box>
             
-            <ConnectButton 
-              showBalance={true}
-              chainStatus="icon"
-              accountStatus="address"
-            />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <IconButton 
+                color="inherit" 
+                onClick={() => setTransactionHistoryOpen(true)}
+                sx={{
+                  position: 'relative',
+                  '&::after': transactions.length > 0 ? {
+                    content: '""',
+                    position: 'absolute',
+                    top: 8,
+                    right: 8,
+                    width: 12,
+                    height: 12,
+                    backgroundColor: '#ff6b2b',
+                    borderRadius: '50%'
+                  } : {}
+                }}
+              >
+                <HistoryIcon />
+              </IconButton>
+              <ConnectButton 
+                showBalance={true}
+                chainStatus="icon"
+                accountStatus="address"
+              />
+            </Box>
           </Toolbar>
         </AppBar>
 
@@ -408,19 +519,70 @@ function App() {
           </Box>
           
           <Grid container spacing={4}>
-            <Grid item xs={12} md={8}>
-              <TabComponent tabs={updatedTabs} />
-            </Grid>
-            
-            <Grid item xs={12} md={4}>
-              <TransactionHistory transactions={transactions} />
+            <Grid item xs={12}>
+              {/* Tab category selection */}
+              <Box sx={{ mb: 4 }}>
+                <Tabs
+                  value={tabGroupIndex}
+                  onChange={handleTabGroupChange}
+                  variant="standard"
+                  centered
+                >
+                  <Tab label="Main" />
+                  <Tab label="Create" />
+                  <Tab label="Verify" />
+                  <Tab label="Features" />
+                </Tabs>
+              </Box>
+              
+              {/* Tab navigation */}
+              <TabComponent
+                tabs={Object.values(tabGroups)[tabGroupIndex].map(tab => ({
+                  id: tab.id,
+                  label: tab.label,
+                  icon: tab.icon,
+                  active: activeTab === 0
+                }))}
+                activeTab={activeTab}
+                onTabChange={handleTabChange}
+              />
+              
+              <Box sx={{ mt: 3 }}>
+                {getTabContent(
+                  Object.values(tabGroups)[tabGroupIndex][activeTab]?.id || 'dashboard'
+                )}
+              </Box>
             </Grid>
           </Grid>
         </Container>
         
         <Box sx={{ position: 'fixed', bottom: 20, right: 20, zIndex: 1000 }}>
-          <TransactionNotification transactions={transactions} />
+          {notification && (
+            <TransactionNotification
+              transactions={transactions}
+              message={notification.message}
+              open={notification.open}
+              onClose={closeNotification}
+            />
+          )}
         </Box>
+
+        {/* Add a drawer for transaction history */}
+        <Drawer
+          anchor="right"
+          open={transactionHistoryOpen}
+          onClose={() => setTransactionHistoryOpen(false)}
+        >
+          <Box sx={{ width: 320, p: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6">Transaction History</Typography>
+              <IconButton onClick={() => setTransactionHistoryOpen(false)}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            <TransactionHistory transactions={transactions} />
+          </Box>
+        </Drawer>
       </Box>
     </ThemeProvider>
   );

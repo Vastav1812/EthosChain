@@ -1,38 +1,42 @@
-name: Build and Deploy
+name: Deploy to Netlify
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy.yml'
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout 🛎️
+      - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Setup Node.js 📦
+      
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'npm'
-          
-      - name: Install Frontend Dependencies 🔧
+          cache-dependency-path: 'frontend/package-lock.json'
+      
+      - name: Install dependencies
         run: |
           cd frontend
           npm ci
-          
-      - name: Build Frontend 🏗️
+      
+      - name: Build application
         run: |
           cd frontend
-          echo "VITE_DISABLE_TYPE_CHECK=true" >> .env
-          npm run build:no-types
-          
-      - name: Deploy to Netlify 🚀
+          npm run build
+        env:
+          VITE_WALLET_CONNECT_PROJECT_ID: ${{ secrets.VITE_WALLET_CONNECT_PROJECT_ID }}
+          VITE_CONTRACT_ADDRESS: ${{ secrets.VITE_CONTRACT_ADDRESS }}
+      
+      - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v2.0
         with:
           publish-dir: './frontend/dist'

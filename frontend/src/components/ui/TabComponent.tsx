@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Box, Tab, Tabs } from '@mui/material';
+import { Box, Tab, Tabs, IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { TabItem } from '../../types';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
   borderBottom: `1px solid rgba(255, 107, 43, 0.1)`,
@@ -10,14 +13,27 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
     background: 'linear-gradient(45deg, #FF6B2B, #FF8F5E)',
     boxShadow: '0 0 15px #FF6B2B, 0 0 30px #FF6B2B',
   },
+  '& .MuiTabs-flexContainer': {
+    display: 'flex',
+    gap: 0,
+    width: 'fit-content',
+  },
+  '& .MuiTabs-scroller': {
+    overflowX: 'auto',
+    '&::-webkit-scrollbar': {
+      display: 'none'
+    },
+    scrollbarWidth: 'none', // Firefox
+    msOverflowStyle: 'none', // IE and Edge
+  }
 }));
 
 const StyledTab = styled(Tab)(({ theme }) => ({
   color: 'rgba(255, 255, 255, 0.6)',
   textTransform: 'none',
-  fontSize: '1rem',
+  fontSize: '0.9rem',
   fontWeight: 500,
-  padding: '16px 24px',
+  padding: '16px 16px',
   transition: 'all 0.3s ease',
   position: 'relative',
   overflow: 'hidden',
@@ -62,25 +78,122 @@ const TabPanel = styled(Box)(({ theme }) => ({
   backdropFilter: 'blur(10px)',
 }));
 
-interface TabItem {
+const ScrollButton = styled(IconButton)(({ theme }) => ({
+  position: 'absolute',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  zIndex: 2,
+  color: 'rgba(255, 107, 43, 0.8)',
+  background: 'rgba(25, 25, 25, 0.7)',
+  backdropFilter: 'blur(5px)',
+  width: 36,
+  height: 36,
+  '&:hover': {
+    background: 'rgba(255, 107, 43, 0.2)',
+  },
+  '&.Mui-disabled': {
+    color: 'rgba(255, 255, 255, 0.2)',
+  }
+}));
+
+interface TabComponentItem {
   id: string;
-  title: string;
+  label: string;
+  active: boolean;
   icon?: React.ReactNode;
-  color?: string;
-  content: React.ComponentType<{ id: string; active: boolean }>;
 }
 
 interface TabComponentProps {
-  tabs: TabItem[];
-  defaultIndex?: number;
+  tabs: TabComponentItem[];
+  activeTab: number;
+  onTabChange: (index: number) => void;
 }
 
-const TabComponent: React.FC<TabComponentProps> = ({ tabs, defaultIndex = 0 }) => {
-  const [value, setValue] = useState(defaultIndex);
+const TabComponent: React.FC<TabComponentProps> = ({ tabs, activeTab, onTabChange }) => {
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
+    if (!isDragging) {
+      onTabChange(newValue);
+    }
   };
+
+  const checkForArrows = () => {
+    if (tabsRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
+      setShowLeftArrow(scrollLeft > 0);
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+    checkForArrows();
+    window.addEventListener('resize', checkForArrows);
+    return () => window.removeEventListener('resize', checkForArrows);
+  }, []);
+
+  const handleScroll = () => {
+    checkForArrows();
+  };
+
+  const scrollTabs = (direction: 'left' | 'right') => {
+    if (tabsRef.current) {
+      const scrollAmount = 200;
+      const currentScroll = tabsRef.current.scrollLeft;
+      tabsRef.current.scrollTo({
+        left: direction === 'left' ? currentScroll - scrollAmount : currentScroll + scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Mouse drag handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (tabsRef.current) {
+      setIsDragging(true);
+      setStartX(e.pageX - tabsRef.current.offsetLeft);
+      setScrollLeft(tabsRef.current.scrollLeft);
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    if (tabsRef.current) {
+      const x = e.pageX - tabsRef.current.offsetLeft;
+      const walk = (x - startX) * 2;
+      tabsRef.current.scrollLeft = scrollLeft - walk;
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setTimeout(() => {
+      checkForArrows();
+    }, 100);
+  };
+
+  // Ensure active tab is visible
+  useEffect(() => {
+    if (tabsRef.current) {
+      const tabElements = tabsRef.current.querySelectorAll('[role="tab"]');
+      if (tabElements && tabElements[activeTab]) {
+        const activeTabElement = tabElements[activeTab] as HTMLElement;
+        const tabsRect = tabsRef.current.getBoundingClientRect();
+        const activeTabRect = activeTabElement.getBoundingClientRect();
+        
+        // Check if active tab is out of view
+        if (activeTabRect.left < tabsRect.left || activeTabRect.right > tabsRect.right) {
+          activeTabElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+      }
+    }
+  }, [activeTab]);
 
   return (
     <Box>
@@ -91,51 +204,76 @@ const TabComponent: React.FC<TabComponentProps> = ({ tabs, defaultIndex = 0 }) =
         boxShadow: '0 4px 30px rgba(0, 0, 0, 0.3)',
         backdropFilter: 'blur(10px)',
         overflow: 'hidden',
-      }}>
-        <StyledTabs
-          value={value}
-          onChange={handleChange}
-          variant="fullWidth"
-          sx={{
-            minHeight: 64,
+        position: 'relative',
+      }}
+      onMouseLeave={handleMouseUp}
+      >
+        {showLeftArrow && (
+          <ScrollButton 
+            onClick={() => scrollTabs('left')}
+            sx={{ left: 0 }}
+            size="small"
+          >
+            <ArrowBackIosNewIcon fontSize="small" />
+          </ScrollButton>
+        )}
+        
+        {showRightArrow && (
+          <ScrollButton 
+            onClick={() => scrollTabs('right')}
+            sx={{ right: 0 }}
+            size="small"
+          >
+            <ArrowForwardIosIcon fontSize="small" />
+          </ScrollButton>
+        )}
+        
+        <Box 
+          ref={tabsRef}
+          sx={{ 
+            overflowX: 'auto',
+            msOverflowStyle: 'none',
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
+            mx: { xs: 4, sm: 5 },
+            px: 1,
+            cursor: isDragging ? 'grabbing' : 'grab'
           }}
+          onScroll={handleScroll}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
         >
-          {tabs.map((tab, index) => (
-            <StyledTab
-              key={tab.id}
-              label={
-                <Box sx={{ 
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                }}>
-                  {tab.icon}
-                  {tab.title}
-                </Box>
-              }
-            />
-          ))}
-        </StyledTabs>
+          <StyledTabs
+            value={activeTab}
+            onChange={handleChange}
+            variant="scrollable"
+            scrollButtons={false}
+            allowScrollButtonsMobile={false}
+            sx={{
+              minHeight: 64,
+            }}
+          >
+            {tabs.map((tab, index) => (
+              <StyledTab
+                key={tab.id}
+                label={
+                  <Box sx={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {tab.icon}
+                    {tab.label}
+                  </Box>
+                }
+              />
+            ))}
+          </StyledTabs>
+        </Box>
       </Box>
-
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={value}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-        >
-          <TabPanel>
-            {tabs.map((tab, index) => {
-              const TabContent = tab.content;
-              return value === index && (
-                <TabContent key={tab.id} id={tab.id} active={value === index} />
-              );
-            })}
-          </TabPanel>
-        </motion.div>
-      </AnimatePresence>
     </Box>
   );
 };
