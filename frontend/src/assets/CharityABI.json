@@ -1,0 +1,100 @@
+{
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_name",
+          "type": "string"
+        },
+        {
+          "name": "_description",
+          "type": "string"
+        },
+        {
+          "name": "_bankacc",
+          "type": "string"
+        },
+        {
+          "name": "_bankname",
+          "type": "string"
+        },
+        {
+          "name": "_address",
+          "type": "string"
+        },
+        {
+          "name": "_ether_coins",
+          "type": "string"
+        }
+      ],
+      "name": "createCharity",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_name",
+          "type": "string"
+        },
+        {
+          "name": "_bankacc",
+          "type": "string"
+        },
+        {
+          "name": "_bankname",
+          "type": "string"
+        },
+        {
+          "name": "_address",
+          "type": "string"
+        },
+        {
+          "name": "_ether_coins",
+          "type": "string"
+        }
+      ],
+      "name": "createOrganisation",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "add_of_charity",
+          "type": "string"
+        },
+        {
+          "name": "add_of_org",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "string"
+        }
+      ],
+      "name": "createTransaction",
+      "outputs": [],
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "function"
+    }
+  ]
+} 
